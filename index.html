@@ -1,0 +1,577 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KTB's Greens Culinary Scientific Journey</title>
+    <style>
+        :root {
+            --primary: #800020;
+            --primary-dark: #5a0017;
+            --accent: #d4af37;
+            --bg-dark: #121212;
+            --card-bg: #1e1e1e;
+            --text-light: #f4f4f4;
+            --text-muted: #b0b0b0;
+            --border-color: #333333;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-dark);
+            color: var(--text-light);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        #auth-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(18, 18, 18, 0.96);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            backdrop-filter: blur(8px);
+        }
+
+        .auth-card {
+            background: var(--card-bg);
+            border: 2px solid var(--accent);
+            padding: 40px;
+            border-radius: 12px;
+            text-align: center;
+            max-width: 420px;
+            width: 90%;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.8);
+        }
+
+        .auth-card h2 {
+            color: var(--accent);
+            margin-bottom: 15px;
+            font-size: 1.6rem;
+        }
+
+        .auth-card p {
+            color: var(--text-muted);
+            margin-bottom: 25px;
+            font-size: 0.95rem;
+        }
+
+        .auth-card input {
+            width: 100%;
+            padding: 12px 15px;
+            background: #2a2a2a;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            color: #fff;
+            font-size: 1.1rem;
+            text-align: center;
+            letter-spacing: 3px;
+            margin-bottom: 20px;
+            outline: none;
+            transition: border-color 0.3s;
+        }
+
+        .auth-card input:focus {
+            border-color: var(--accent);
+        }
+
+        .auth-card button {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            font-size: 1rem;
+            border-radius: 6px;
+            cursor: pointer;
+            width: 100%;
+            font-weight: bold;
+            transition: background 0.3s;
+        }
+
+        .auth-card button:hover {
+            background: var(--primary-dark);
+        }
+
+        .error-msg {
+            color: #ff6b6b;
+            margin-top: 12px;
+            font-size: 0.85rem;
+            display: none;
+        }
+
+        #app-container {
+            display: none;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+
+        header {
+            background: linear-gradient(135deg, var(--primary-dark), #2a0008);
+            border-bottom: 3px solid var(--accent);
+            padding: 30px 20px;
+            text-align: center;
+        }
+
+        header h1 {
+            color: var(--accent);
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.5);
+        }
+
+        header p {
+            color: var(--text-light);
+            font-size: 1.1rem;
+            font-style: italic;
+        }
+
+        .toolbar {
+            background: var(--card-bg);
+            padding: 20px;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            flex-wrap: wrap;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.4);
+        }
+
+        .search-box {
+            position: relative;
+            flex: 1;
+            max-width: 600px;
+            min-width: 280px;
+        }
+
+        .search-box input {
+            width: 100%;
+            padding: 12px 20px;
+            background: #2a2a2a;
+            border: 1px solid var(--border-color);
+            border-radius: 30px;
+            color: white;
+            font-size: 1rem;
+            outline: none;
+            transition: all 0.3s;
+        }
+
+        .search-box input:focus {
+            border-color: var(--accent);
+            box-shadow: 0 0 8px rgba(212, 175, 55, 0.3);
+        }
+
+        main {
+            flex: 1;
+            padding: 30px 20px;
+            max-width: 1400px;
+            margin: 0 auto;
+            width: 100%;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 25px;
+        }
+
+        .card {
+            background: var(--card-bg);
+            border-radius: 12px;
+            overflow: hidden;
+            border: 1px solid var(--border-color);
+            display: flex;
+            flex-direction: column;
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.6);
+            border-color: var(--accent);
+        }
+
+        .card-img-container {
+            width: 100%;
+            height: 220px;
+            background: #252525;
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .card-img-container img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.5s;
+        }
+
+        .card:hover .card-img-container img {
+            transform: scale(1.05);
+        }
+
+        .badge-kcal {
+            position: absolute;
+            top: 12px;
+            right: 12px;
+            background: rgba(128, 0, 32, 0.9);
+            color: var(--accent);
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: bold;
+            border: 1px solid var(--accent);
+            backdrop-filter: blur(4px);
+        }
+
+        .card-body {
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            flex: 1;
+        }
+
+        .card-title {
+            color: var(--accent);
+            font-size: 1.3rem;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 8px;
+        }
+
+        .section-block h4 {
+            color: #ffccd5;
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 4px;
+        }
+
+        .section-block p {
+            font-size: 0.9rem;
+            color: var(--text-muted);
+            line-height: 1.4;
+            padding-left: 15px;
+        }
+
+        footer.site-footer {
+            text-align: center;
+            padding: 20px;
+            background: var(--card-bg);
+            border-top: 1px solid var(--border-color);
+            color: var(--text-muted);
+            font-size: 0.9rem;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Authentication Screen -->
+    <div id="auth-overlay">
+        <div class="auth-card">
+            <h2>Authentication Required</h2>
+            <p>Enter dynamic access code</p>
+            <input type="password" id="password-input" placeholder="••••" autocomplete="current-password">
+            <button onclick="verifyPassword()">Access Journey</button>
+            <div id="error-message" class="error-msg">Incorrect password. Please try again.</div>
+        </div>
+    </div>
+
+    <!-- Main Application -->
+    <div id="app-container">
+        <header>
+            <h1>Welcome to KTB's Greens Culinary Scientific Journey</h1>
+            <p>Explore rigorous scientific classifications, precise nutritional breakdowns, and traditional culinary methods across listed master recipes.</p>
+        </header>
+
+        <div class="toolbar">
+            <div class="search-box">
+                <input type="text" id="search-input" placeholder="Search 1. Dish | 2. Kcals | 3. Ingredients | 4. Scientific classification | 5. Cooking methods..." onkeyup="filterDishes()">
+            </div>
+        </div>
+
+        <main>
+            <div class="grid" id="dishes-grid"></div>
+        </main>
+
+        <footer class="site-footer">
+            <p>&copy; 2026 KTB's Greens Culinary Scientific Journey. All rights reserved.</p>
+        </footer>
+    </div>
+
+    <script>
+        const dishes = [
+            {
+                name: "1. Agathi Keerai Poriyal",
+                kcal: "140 Kcals", 
+                image: "",
+                ingredients: "Agathi Keerai / Hummingbird Tree Leaves (100g), Grated Coconut (15g), Cooking Oil (12g), Chana Dal & Urad Dal (5g), Mustard Seeds, Cumin Seeds & Dry Red Chillies (4g), Shallots & Garlic (20g), Turmeric Powder & Salt (3g).",
+                scientific: "Sesbania grandiflora (Agathi), Cocos nucifera (Coconut), Cicer arietinum / Vigna mungo (Dal), Brassica nigra (Mustard).",
+                cooking: "Pluck, wash, and chop leaves roughly. Heat oil in a pan, sizzle mustard seeds, cumin seeds, chana dal, urad dal, and dry red chillies until golden. Sauté chopped shallots and crushed garlic until translucent. Add chopped agathi leaves, turmeric powder, and salt, toss well without extra water, and cook uncovered on medium heat until fully softened. Mix with grated coconut, stir for a minute, and serve hot."
+            },
+            {
+                name: "2. Arugula Rocket Leaf Fry",
+  				kcal: "130 Kcals",	
+                image: "",	
+                ingredients: "Arugula / Rocket Leaves (100g), Cooking Oil or Olive Oil (12g), Garlic & Shallots (20g), Mustard Seeds, Cumin Seeds & Dry Red Chillies (4g), Lemon Juice (10g), Salt & Black Pepper (3g).", 
+                scientific: "Eruca vesicaria (Arugula), Brassica species (Mustard Seeds).",
+                cooking: "Wash and drain arugula leaves thoroughly. Heat oil in a pan and sizzle mustard seeds, cumin seeds, and dry red chillies until aromatic. Sauté finely chopped garlic and shallots until soft and translucent. Add arugula leaves, salt, and black pepper, tossing quickly over medium heat until wilted. Drizzle with fresh lemon juice, toss well, and serve hot."
+            },
+            {
+                name: "3. Chakravarthy Leaf Curry",
+  				kcal: "160 Kcals",
+  				image: "",
+  				ingredients: "Chakravarthy Keerai / Bathua Leaves (100g), Moong Dal or Toor Dal (35g), Cooking Oil or Ghee (12g), Mustard Seeds, Cumin Seeds & Dry Red Chillies (4g), Onions & Garlic (25g), Turmeric Powder, Coriander Powder & Salt (3g), Water (As required).",
+  				scientific: "Chenopodium album (Bathua), Cicer arietinum / Vigna mungo (Dal).",
+  				cooking: "Pick, wash, and roughly chop chakravarthy leaves while rinsing and soaking pulses briefly. Cook lentils and chopped greens together with water, turmeric powder, and salt until soft and tender. Heat oil or ghee in a separate pan and sizzle mustard seeds, cumin seeds, and dry red chillies. Sauté chopped onions and minced garlic in the tempering until golden brown. Pour cooked greens and dal mixture into the tempering, stir well, and simmer for a few minutes before serving."
+	  	    },
+            {
+                name: "4. Collard Greens Fry",	
+				kcal: "130 Kcals",
+  				image: "",
+ 	       		ingredients: "Collard Greens (100g), Cooking Oil (12g), Onions & Garlic (25g), Mustard Seeds, Cumin Seeds & Red Chilli Flakes (4g), Turmeric Powder & Salt (3g).",	
+				scientific: "Brassica oleracea var. acephala (Collard Greens), Brassica nigra (Mustard Seeds), Cuminum cyminum (Cumin).",	
+				cooking: "Wash collard greens thoroughly, remove thick stems, and slice into thin ribbons. Heat oil in a pan and crackle mustard seeds, cumin seeds, and red chilli flakes. Sauté sliced onions and minced garlic until translucent and tender. Add sliced collard greens, turmeric powder, and salt, tossing well without extra water and cooking uncovered on medium heat until completely softened. Stir thoroughly and serve hot."
+            },
+            {
+                name: "5. Curry Leaf Powder (Karuveppilai Podi)",
+  				kcal: "85 Kcals",
+  				image: "",
+  				ingredients: "Curry Leaves (40g), Chana Dal & Urad Dal (30g), Dry Red Chillies (10g), Cumin Seeds & Black Pepper (5g), Tamarind (5g), Cooking Oil or Sesame Oil (8g), Salt (2g).",
+  				scientific: "Murraya koenigii (Curry Leaves), Cicer arietinum / Vigna mungo (Dal), Cuminum cyminum / Piper nigrum (Spices).",
+  				cooking: "Wash fresh curry leaves and spread out to dry completely until moisture-free. Heat oil in a pan to separately roast chana dal, urad dal, dry red chillies, cumin seeds, and black pepper until fragrant and golden. Sauté dried curry leaves in a few drops of oil on low heat until crisp and brittle. Allow all roasted ingredients, tamarind, and salt to cool completely. Grind the mixture in a dry grinder into a coarse or fine aromatic powder and store in an airtight container."
+ 	   		},
+            {
+                name: "6. Drumstick Leaf Curry",
+    			kcal: "150 Kcals",
+    			image: "",
+   				ingredients: "Drumstick Leaves / Murungai Keerai (100g), Moong Dal or Chana Dal (20g), Grated Coconut (15g), Cooking Oil (12g), Mustard Seeds, Cumin Seeds & Dry Red Chillies (4g), Shallots & Garlic (20g), Turmeric Powder & Salt (3g).",
+                scientific: "Moringa oleifera (Drumstick Leaves), Cocos nucifera (Coconut), Vigna radiata / Cicer arietinum (Dal), Brassica nigra (Mustard).",
+    			cooking: "Carefully pick, wash, and drain drumstick leaves. Boil moong or chana dal briefly with water and turmeric until tender yet firm. Heat oil in a pan, sizzle mustard seeds, cumin seeds, and dry red chillies, and sauté chopped shallots and garlic until translucent. Add the clean drumstick leaves, cooked lentils, and salt, tossing well and cooking uncovered on medium heat until the leaves soften completely. Mix with freshly grated coconut, stir well for a minute, and serve hot with rice."
+            },
+            {
+                name: "7. Fenugreek Leaf Curry",
+    			kcal: "140 Kcals",
+    			image: "",
+   				ingredients: "Fenugreek Leaves / Methi (100g), Moong Dal or Chana Dal (20g), Cooking Oil (12g), Mustard Seeds, Cumin Seeds & Dry Red Chillies (4g), Onions & Garlic (25g), Turmeric Powder & Salt (3g).",
+    			scientific: "Trigonella foenum-graecum (Fenugreek), Vigna radiata / Cicer arietinum (Dal), Brassica nigra (Mustard).",
+    			cooking: "Pluck fenugreek leaves from tough stems, wash thoroughly to remove grit, and chop roughly. Soak moong dal briefly and boil with water and turmeric until partially tender. Heat oil in a pan, sizzle mustard seeds, cumin seeds, and dry red chillies until fragrant, then sauté chopped onions and minced garlic until translucent. Add chopped fenugreek leaves, cooked lentils, and salt, tossing without extra water, and cook on medium heat until the greens shrink and soften completely before serving."
+ 	   		},
+            {
+                name: "8. Gongura Rosella Pachadi",
+    			kcal: "140 Kcals",
+    			image: "",
+   				ingredients: "Gongura / Rosella Leaves (100g), Cooking Oil (15g), Dry Red Chillies (8g), Garlic & Shallots (25g), Cumin Seeds & Mustard Seeds (4g), Fenugreek Seeds (2g), Turmeric Powder & Salt (3g).",
+   				scientific: "Hibiscus sabdariffa (Gongura), Trigonella foenum-graecum (Fenugreek), Brassica nigra (Mustard), Allium sativum (Garlic).",
+   				cooking: "Pluck gongura leaves, wash thoroughly, and dry completely to remove surface moisture. Heat oil in a pan to sauté dry red chillies, cumin seeds, mustard seeds, and fenugreek seeds until aromatic. Add cleaned gongura leaves, garlic cloves, and turmeric powder to the same pan and sauté until they wilt completely into a soft mass. Allow the mixture to cool to room temperature."
+	    	},
+            {
+                name: "9. Green Amaranth Pigweed Leaf Curry",
+    	        kcal: "150 Kcals",
+    	        image: "",
+    	        ingredients: "Green Amaranth / Pigweed Leaves (100g), Moong Dal or Toor Dal (30g), Cooking Oil (12g), Mustard Seeds, Cumin Seeds & Dry Red Chillies (4g), Onions & Garlic (25g), Turmeric Powder, Coriander Powder & Salt (3g).",
+    			scientific: "Amaranthus viridis (Green Amaranth), Cicer arietinum / Vigna radiata (Dal), Brassica nigra (Mustard).",
+    			cooking: "Wash amaranth leaves and tender stems thoroughly, chop roughly, and boil rinsed lentils until soft. Heat oil in a pan and crackle mustard seeds, cumin seeds, and dry red chillies, then sauté chopped onions and minced garlic until translucent and aromatic. Combine the chopped amaranth leaves, cooked dal, turmeric powder, coriander powder, and salt in the pan with a little water and simmer until fully blended into a cohesive, smooth curry consistency before serving."
+	    	},
+            {
+                name: "10. Kale Fry",
+    			kcal: "120 Kcals",
+    			image: "",
+    			ingredients: "Kale Leaves (100g), Cooking Oil or Olive Oil (12g), Garlic & Shallots (20g), Mustard Seeds, Cumin Seeds & Red Chilli Flakes (4g), Turmeric Powder & Salt (3g).",
+    			scientific: "Brassica oleracea var. sabellica (Kale), Allium sativum (Garlic), Brassica nigra (Mustard Seeds).",
+    			cooking: "Wash fresh kale leaves thoroughly, strip away thick stems, chop into bite-sized pieces, and dry completely. Heat oil in a pan, sizzle mustard seeds, cumin seeds, and red chilli flakes until fragrant, and sauté finely chopped garlic and shallots until soft and translucent. Add the prepared kale leaves, turmeric powder, and salt, tossing well over medium heat without extra water until the leaves wilt and soften into a crisp, fiber-rich side dish."
+	   		},
+            {
+                name: "11. Lesser White Amaranth Mulai Leaf Curry",
+    			kcal: "140 Kcals",
+    			image: "",
+    			ingredients: "Mulai Keerai / Lesser White Amaranth Leaves (100g), Moong Dal or Chana Dal (20g), Grated Coconut (15g), Cooking Oil (12g), Mustard Seeds, Cumin Seeds & Dry Red Chillies (4g), Shallots & Garlic (20g), Turmeric Powder & Salt (3g).",
+    			scientific: "Amaranthus tricolor (Lesser White Amaranth), Cocos nucifera (Coconut), Vigna radiata (Moong Dal), Brassica nigra (Mustard).",
+    			cooking: "Pluck mulai keerai leaves, wash thoroughly, and chop finely. Rinse and simmer moong or chana dal briefly with water and turmeric until tender yet structurally intact. Heat oil in a pan, sizzle mustard seeds, cumin seeds, and dry red chillies, and sauté chopped shallots and garlic until translucent. Add the chopped amaranth leaves, cooked lentils, and salt, tossing well without extra water and cooking uncovered on medium heat until the leaves soften completely. Fold through with freshly grated coconut, stir for a minute over heat, and serve hot."
+ 	   		},
+            {
+                name: "12. Manathakkali Black Nightshade Leaf Curry",
+    			kcal: "150 Kcals",
+    			image: "",
+    			ingredients: "Manathakkali Keerai / Black Nightshade Leaves (100g), Moong Dal or Toor Dal (30g), Cooking Oil (12g), Mustard Seeds, Cumin Seeds & Dry Red Chillies (4g), Onions & Garlic (25g), Turmeric Powder, Coriander Powder & Salt (3g).",
+    			scientific: "Solanum nigrum (Black Nightshade), Cicer arietinum / Vigna radiata (Dal), Brassica nigra (Mustard).",	
+				cooking: "Pick, wash, and roughly chop manathakkali leaves while rinsing and boiling lentils until soft. Heat oil in a pan, crackle mustard seeds, cumin seeds, and dry red chillies, then sauté chopped onions and minced garlic until translucent and fragrant. Combine the chopped black nightshade leaves, cooked dal, turmeric powder, coriander powder, and salt with a little water and simmer together. Stir thoroughly until a rich, uniform curry consistency is attained and serve hot."
+  	   		},
+            {
+            	name: "13. Mustard Green Fry",
+    			kcal: "130 Kcals",
+    			image: "",
+    			ingredients: "Mustard Greens / Sarson (100g), Cooking Oil (12g), Onions & Garlic (25g), Mustard Seeds, Cumin Seeds & Red Chilli Flakes (4g), Turmeric Powder & Salt (3g).",
+    			scientific: "Brassica juncea (Mustard Greens), Brassica nigra (Mustard Seeds), Cuminum cyminum (Cumin), Allium sativum (Garlic).",
+    			cooking: "Wash mustard greens thoroughly, trim thick stems, and chop roughly into bite-sized strips. Heat oil in a pan, crackle mustard seeds, cumin seeds, and red chilli flakes, then sauté sliced onions and minced garlic until soft and translucent. Add the chopped mustard greens, turmeric powder, and salt, tossing well without extra water, and cook uncovered on medium heat until the greens shrink and soften completely before serving hot."
+	  	   },
+       	   {
+            	name: "14. Palak Indian Spinach Curry",
+    			kcal: "160 Kcals",
+    			image: "",
+    			ingredients: "Palak / Indian Spinach (100g), Cooking Oil or Ghee (15g), Onions, Tomatoes & Garlic (40g), Cumin Seeds, Garam Masala & Coriander Powder (5g), Fresh Cream or Cashew Paste (15g), Turmeric Powder & Salt (3g).",
+    			scientific: "Spinacia oleracea (Palak Spinach), Allium cepa (Onion), Solanum lycopersicum (Tomato).",
+    			cooking: "Wash spinach leaves thoroughly, blanch briefly in hot water, plunge into cold water to retain color, and puree smoothly. Heat oil or ghee in a pan, splutter cumin seeds, and sauté finely chopped onions, garlic, and tomatoes until soft and paste-like. Stir ground spices including turmeric, coriander powder, and garam masala into the base until fragrant. Add the smooth spinach puree and salt, simmer gently, then swirl with fresh cream or cashew paste and serve hot."
+	       },
+           {
+                name: "15. Ponnaganti Dwarf Copperleaf Curry",
+    			kcal: "150 Kcals",
+    			image: "",
+    			ingredients: "Ponnaganti Keerai / Dwarf Copperleaf (100g), Moong Dal or Toor Dal (30g), Cooking Oil (12g), Mustard Seeds, Cumin Seeds & Dry Red Chillies (4g), Onions & Garlic (25g), Turmeric Powder, Coriander Powder & Salt (3g).",
+    			scientific: "Alternanthera sessilis (Dwarf Copperleaf), Cicer arietinum / Vigna radiata (Dal), Brassica nigra (Mustard).",
+    			cooking: "Pick, wash, and roughly chop ponnaganti leaves while rinsing and boiling lentils until soft. Heat oil in a pan, sizzle mustard seeds, cumin seeds, and dry red chillies, and sauté chopped onions and minced garlic until translucent and aromatic. Combine the chopped copperleaf greens, cooked dal, turmeric powder, coriander powder, and salt with a little water and simmer together until a uniform, rich curry consistency is reached before serving hot."
+	        },
+            {
+                name: "16. Purple Red Amaranth Leaf Curry",
+    			kcal: "160 Kcals",
+    			image: "",
+    			ingredients: "Purple Red Amaranth / Siru Keerai (100g), Grated Coconut (20g), Moong Dal or Toor Dal (25g), Cooking Oil (12g), Mustard Seeds, Cumin Seeds & Dry Red Chillies (4g), Shallots & Garlic (25g), Turmeric Powder & Salt (3g).",
+    			scientific: "Amaranthus cruentus / Amaranthustricolor (Red Amaranth), Cocos nucifera (Coconut), Vigna radiata (Moong Dal), Brassica nigra (Mustard).",
+    			cooking: "Wash amaranth leaves thoroughly, trim stems, chop roughly, and boil rinsed lentils until soft. Heat oil in a pan, crackle mustard seeds, cumin seeds, and dry red chillies, then sauté chopped shallots and crushed garlic until translucent. Add the chopped red amaranth leaves, cooked lentils, turmeric powder, and salt with a little water, simmering until tender. Blend with freshly grated coconut paste, simmer for a couple of minutes until unified, and serve hot."
+	   	    },
+            {
+                name: "17. Radish Leaf Curry",
+    			kcal: "135 Kcals",
+    			image: "",
+   				ingredients: "Radish Leaves / Mooli Keerai (100g), Moong Dal or Chana Dal (20g), Cooking Oil (12g), Mustard Seeds, Cumin Seeds & Dry Red Chillies (4g), Onions & Garlic (25g), Turmeric Powder & Salt (3g).",
+    			scientific: "Raphanus sativus (Radish Leaves), Vigna radiata (Moong Dal), Brassica nigra (Mustard), Allium sativum (Garlic).",
+    			cooking: "Wash fresh radish leaves, remove tough stalks, and chop finely while soaking and boiling moong or chana dal with water and turmeric until tender yet firm. Heat oil in a pan, sizzle mustard seeds, cumin seeds, and dry red chillies, and sauté chopped onions and minced garlic until soft and translucent. Add the chopped radish leaves, cooked lentils, and salt, tossing well without extra water, and cook on medium height until leaves soften completely before serving."
+ 	    	},
+            {
+                name: "18. Red Green Chinese Amaranth Leaf Curry",
+    			kcal: "135 Kcals",
+    			image: "",
+    			ingredients: "Red Green Chinese Amaranth Leaves (100g), Moong Dal or Chana Dal (20g), Cooking Oil (12g), Mustard Seeds, Cumin Seeds & Dry Red Chillies (4g), Shallots & Garlic (25g), Turmeric Powder & Salt (3g).",
+    			scientific: "Amaranthus tricolor (Chinese Amaranth), Vigna radiata (Moong Dal), Brassica nigra (Mustard).",
+    			cooking: "Wash bicolor Chinese amaranth leaves thoroughly and chop roughly along with tender stems while boiling moong or chana dal with water and turmeric until partially soft. Heat oil in a pan, crackle mustard seeds, cumin seeds, and dry red chillies, and sauté chopped shallots and minced garlic until soft. Add the chopped amaranth leaves, cooked lentils, and salt, tossing without extra water and cooking on medium heat until the leaves shrink and soften completely before serving."
+ 	    	},
+            {
+                name: "19. Spinach Fry",
+    			kcal: "120 Kcals",
+    			image: "",
+    			ingredients: "Spinach Leaves (100g), Cooking Oil (12g), Garlic & Shallots (20g), Mustard Seeds, Cumin Seeds & Red Chilli Flakes (4g), Turmeric Powder & Salt (3g).",
+    			scientific: "Spinacia oleracea (Spinach), Allium sativum (Garlic), Brassica nigra (Mustard Seeds), Cuminum cyminum (Cumin).",
+    			cooking: "Wash fresh spinach leaves thoroughly, trim thick stems, chop roughly, and drain completely. Heat oil in a pan, crackle mustard seeds, cumin seeds, and red chilli flakes, then sauté finely chopped garlic and shallots until soft and translucent. Add the prepared spinach leaves, turmeric powder, and salt, tossing well over medium heat without extra water until the leaves quickly wilt and soften into a light, vitamin-rich side dish."
+	   		},
+            {
+                name: "20. Spleen Amaranth Arai Leaf Curry",
+    			kcal: "150 Kcals",
+    			image: "",
+    			ingredients: "Arai Keerai / Spleen Amaranth Leaves (100g), Moong Dal or Toor Dal (30g), Cooking Oil (12g), Mustard Seeds, Cumin Seeds & Dry Red Chillies (4g), Shallots & Garlic (25g), Turmeric Powder & Salt (3g).",
+    			scientific: "Amaranthus dubius (Spleen Amaranth), Cicer arietinum / Vigna radiata (Dal), Brassica nigra (Mustard).",
+    			cooking: "Pick arai keerai leaves and tender shoots, wash thoroughly, chop roughly, and boil rinsed lentils until soft. Heat oil in a pan, crackle mustard seeds, cumin seeds, and dry red chillies, and sauté chopped shallots and crushed garlic until translucent. Combine the chopped spleen amaranth leaves, cooked dal, turmeric powder, and salt with a little water and simmer until fully tender. Mash thoroughly using a traditional wooden churner until smooth and serve hot."
+	    	},
+            {
+                name: "21. Swiss Chard Leaf Fry",
+    			kcal: "130 Kcals",
+    			image: "",
+    			ingredients: "Swiss Chard Leaves & Stems (100g), Cooking Oil (12g), Garlic & Shallots (20g), Mustard Seeds, Cumin Seeds & Red Chilli Flakes (4g), Turmeric Powder & Salt (3g).",
+    			scientific: "Beta vulgaris subsp. cicla (Swiss Chard), Allium sativum (Garlic), Brassica nigra (Mustard Seeds).",
+    			cooking: "Wash fresh Swiss chard leaves, slice vibrant stalks into thin matchsticks, and chop leaves roughly. Heat oil in a pan, crackle mustard seeds, cumin seeds, and red chilli flakes, and sauté finely chopped garlic and shallots until soft. Add the sliced chard stalks, chopped leaves, turmeric powder, and salt, tossing well over medium heat without extra water until the stalks tenderize and leaves wilt completely before serving hot."
+	    	},
+            {
+                name: "22. Watercress Leaf Fry",
+   				kcal: "125 Kcals",
+    			image: "",
+    			ingredients: "Watercress Leaves and Stems (100g), Cooking Oil (12g), Garlic & Shallots (20g), Mustard Seeds, Cumin Seeds & Red Chilli Flakes (4g), Turmeric Powder & Salt (3g).",
+    			scientific: "Nasturtium officinale (Watercress), Allium sativum (Garlic), Brassica nigra (Mustard Seeds), Cuminum cyminum (Cumin).",
+    			cooking: "Pick over fresh watercress, wash thoroughly to remove silt, and drain completely while keeping tender stems intact. Heat in a pan, crackle mustard seeds, cumin seeds, and red chilli flakes, and sauté finely chopped garlic and shallots until soft. Add the prepared watercress, turmeric powder, and salt, tossing well over medium-high heat without extra water until the stems tenderize and the leaves quickly wilt down into a vibrant side dish."
+ 	        	}           
+        	];
+
+        function getDynamicPassword() {
+            const now = new Date();
+            const day = String(now.getDate()).padStart(2, '0');
+            const month = String(now.getMonth() + 1).padStart(2, '0');
+            return day + month;
+        }
+
+        function verifyPassword() {
+            const inputVal = document.getElementById('password-input').value.trim();
+            const correctPassword = getDynamicPassword();
+            const errorMsg = document.getElementById('error-message');
+
+            if (inputVal === correctPassword) {
+                document.getElementById('auth-overlay').style.display = 'none';
+                document.getElementById('app-container').style.display = 'flex';
+                renderDishes(dishes);
+            } else {
+                errorMsg.style.display = 'block';
+                document.getElementById('password-input').value = '';
+            }
+        }
+
+        function renderDishes(data) {
+            const grid = document.getElementById('dishes-grid');
+            grid.innerHTML = '';
+
+            if (data.length === 0) {
+                grid.innerHTML = '<p style="grid-column: 1/-1; text-align: center; color: var(--text-muted); padding: 40px;">No matching culinary items found.</p>';
+                return;
+            }
+
+            data.forEach(dish => {
+                const card = document.createElement('div');
+                card.className = 'card';
+                card.innerHTML = `
+                    <div class="card-img-container">
+                        <img src="${dish.image}" alt="${dish.name}" loading="lazy">
+                        <div class="badge-kcal">${dish.kcal}</div>
+                    </div>
+                    <div class="card-body">
+                        <h3 class="card-title">${dish.name}</h3>
+                        <div class="section-block">
+                            <h4>Ingredients</h4>
+                            <p>${dish.ingredients}</p>
+                        </div>
+                        <div class="section-block">
+                            <h4>Scientific Classification</h4>
+                            <p>${dish.scientific}</p>
+                        </div>
+                        <div class="section-block">
+                            <h4>Cooking Methods</h4>
+                            <p>${dish.cooking}</p>
+                        </div>
+                    </div>
+                `;
+                grid.appendChild(card);
+            });
+        }
+
+        function filterDishes() {
+            const query = document.getElementById('search-input').value.toLowerCase().trim();
+            const filtered = dishes.filter(dish => {
+                return dish.name.toLowerCase().includes(query) ||
+                       dish.kcal.toLowerCase().includes(query) ||
+                       dish.ingredients.toLowerCase().includes(query) ||
+                       dish.scientific.toLowerCase().includes(query) ||
+                       dish.cooking.toLowerCase().includes(query);
+            });
+            renderDishes(filtered);
+        }
+
+        document.getElementById('password-input').addEventListener('keypress', function (e) {
+            if (e.key === 'Enter') {
+                verifyPassword();
+            }
+        });
+    </script>
+</body>
+</html>
